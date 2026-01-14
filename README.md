@@ -31,11 +31,11 @@ Standard Android battery stats tell you *which* app is using battery, but they d
 
 **1. Hardware Power Analysis**
 *The correlation between Screen Brightness (Top Right), CPU Frequency (Bottom Left), and Battery Drain.*
-![Hardware Analysis](images/figure_1.png)
+![Hardware Analysis](images/Figure_1.png)
 
 **2. Model Performance (Actual vs. Predicted)**
 *The XGBoost model (Red) successfully predicting the battery drain trends against the real Multimeter data (Blue).*
-![Model Training](images/figure_2.png)
+![Model Training](images/Figure_2.png)
 
 * **Data Collected:** ~1,000 datapoints across Idle, Video, and Gaming states.
 * **Model Accuracy:** $R^2$ Score of **0.69** (Base model using only CPU & Brightness).
