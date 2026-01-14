@@ -9,7 +9,17 @@ Standard Android battery stats tell you *which* app is using battery, but they d
 **WattWatch changes the approach:**
 1.  **Listen to the Kernel:** It reads raw hardware files (`/sys/class/...`) to log real-time voltage, current, brightness, and CPU frequency.
 2.  **Train the Brain:** An **XGBoost** regression model learns the device's "Power Fingerprint" (e.g., *100% Brightness + 2GHz CPU should equal ~900mA*).
-3.  **Detect Anomalies:** If the battery drains at 900mA but the screen is dim and CPU is reported as "low," the model flags a high **Residual Score** (Suspicious Activity).
+3.  **Detect Anomalies:** If the battery drains at 900mA but the screen is dim and CPU is reported as "low," the model flags a high **Residual Score** (Suspicious Activity). 
+
+## 📈 Analysis & Visualizations
+
+**Figure 1: Hardware Power Analysis**
+*The correlation between Screen Brightness (Top Right), CPU Frequency (Bottom Left), and Battery Drain.*
+![Hardware Analysis](images/figure_1.png)
+
+**Figure 2: Model Performance (Actual vs. Predicted)**
+*The XGBoost model (Red) successfully predicting the battery drain trends against the real Multimeter data (Blue).*
+![Model Training](images/figure_2.png)
 
 ## 🛠 Architecture
 * **Data Acquisition:** Python script running in Termux (Root) harvesting data from Linux kernel interfaces.
