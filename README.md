@@ -1,123 +1,79 @@
-# ⚡ WattWatch
-**Kernel-Level Power Profiling & Anomaly Detection for Android**
+# Watt-Watch 🔋
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue) ![Platform](https://img.shields.io/badge/Platform-Android%20(Rooted)-green) ![ML](https://img.shields.io/badge/Model-XGBoost-orange)
+<div align="center">
+  <img src="images/Figure_1.png" alt="Watt-Watch Overview" width="700"/>
+</div>
 
-**WattWatch** is a research project and security tool that uses Machine Learning to detect "invisible" battery drain on Android devices. Unlike standard battery monitors that rely on system averages, WattWatch bridges the kernel-to-user-space gap by harvesting raw telemetry directly from `/sys/class` interfaces.
+**A Machine Learning-Powered Real-Time Hardware Profiler and Security Sentinel for Android.**
 
-By training an **XGBoost Regressor** on a custom dataset of hardware states (CPU frequency, screen brightness), the system identifies processes that consume disproportionate power—effectively flagging hidden crypto-miners or malware that attempt to evade traditional detection.
+## 📖 Overview
+Standard Android battery monitors rely on OS-level statistics to tell you *what* drained your battery after the fact. **Watt-Watch** takes a different approach. It acts as an active security sentinel, reading raw hardware telemetry in real-time to detect abnormal power consumption—such as hidden crypto-miners, spyware, or rogue background processes—the exact second it happens.
 
----
+## ✨ Key Features
+* **Raw Hardware Telemetry:** Bypasses the Android API to read directly from `/sys/class/` and `/sys/kernel/` nodes, tracking CPU frequency, GPU load, and Screen Brightness.
+* **Dual-Radio Analysis:** Explicitly separates Wi-Fi (`wlan0`) and Cellular (`ccmni1`) traffic to accurately calculate the differing physical power costs of radio transmissions.
+* **Edge AI via Model Transpilation:** Trained using XGBoost on a PC, the AI model is transpiled into pure, dependency-free Python using `m2cgen`. This bypasses Termux/Android SELinux restrictions and missing ARM-compiled libraries, allowing complex machine learning inference to run natively and efficiently on edge devices.
+* **Real-Time Sentinel:** Runs quietly in the background via Termux. If the actual physical battery current spikes significantly higher than the AI's predicted current, it triggers an instant system alert.
 
-## 🚀 The Concept
-Standard Android battery stats tell you *which* app is using battery, but they don't tell you *if the usage makes sense*.
+## 📊 How it Works
 
-**WattWatch changes the approach:**
-1.  **Listen to the Kernel:** It reads raw hardware files (`/sys/class/...`) to log real-time voltage, current, brightness, and CPU frequency.
-2.  **Train the Brain:** An **XGBoost** regression model learns the device's "Power Fingerprint" (e.g., *100% Brightness + 2GHz CPU should equal ~900mA*).
-3.  **Detect Anomalies:** If the battery drains at 900mA but the screen is dim and CPU is reported as "low," the model flags a high **Residual Score** (Suspicious Activity).
+<div align="center">
+  <img src="images/Figure_2.png" alt="Watt-Watch Feature Importance" width="600"/>
+  <p><i>Figure 2: XGBoost Feature Importance revealing the specific power personality of the device.</i></p>
+</div>
 
----
+1. **Logging Phase (`watt_logger.py`):** Collects a baseline dataset of hardware metrics across various states (idle, gaming, downloading).
+2. **Training Phase (PC):** An XGBoost regressor is trained on the CSV data to understand the standard energy footprint of the specific phone.
+3. **Transpilation (`translate.py`):** The heavy XGBoost model is converted into raw, pure Python math logic (`brain.py`).
+4. **Monitoring Phase (`checker.py`):** The lightweight sentinel watches the hardware nodes 24/7 and flags power anomalies instantly.
 
-## 🛠 Architecture
-* **Data Acquisition:** Python script (`watt_logger.py`) running in Termux (Root) harvesting data from Linux kernel interfaces.
-* **Preprocessing:** Cleaning and synchronizing timestamps for CPU cores and display drivers.
-* **Model:** XGBoost Regressor (Gradient Boosting) for non-linear power prediction.
-* **Verification:** Simulated "Crypto-Miner" scenario successfully flagged with >95% confidence.
+## 🚀 Installation & Usage
 
----
+**Prerequisites:** An Android device with [Termux](https://termux.dev/en/) installed. No root required for basic node access (depending on OEM).
 
-## 📊 Results & Analysis (Prototype v1)
-
-**1. Hardware Power Analysis**
-*The correlation between Screen Brightness (Top Right), CPU Frequency (Bottom Left), and Battery Drain.*
-![Hardware Analysis](images/Figure_1.png)
-
-**2. Model Performance (Actual vs. Predicted)**
-*The XGBoost model (Red) successfully predicting the battery drain trends against the real Multimeter data (Blue).*
-![Model Training](images/Figure_2.png)
-
-* **Data Collected:** ~1,000 datapoints across Idle, Video, and Gaming states.
-* **Model Accuracy:** $R^2$ Score of **0.69** (Base model using only CPU & Brightness).
-* **Anomaly Detection:** Successfully distinguished between legitimate high-drain (Gaming) and suspicious high-drain (Simulated hidden process).
-
----
-
-## 📂 Project Structure
-
-```text
-/
-├── watt_logger.py       # The 'Sensor': Runs on phone (Root) to log kernel metrics
-├── watt_watch_data.csv  # The 'Dataset': Raw telemetry (Time, Current, Brightness, Freq)
-├── train_model.py       # The 'Brain': Trains the XGBoost model & saves it
-├── test_detector.py     # The 'Guard': Loads model & runs anomaly detection scenarios
-├── images/              # Graph visualizations
-│   ├── figure_1.png
-│   └── figure_2.png
-└── README.md
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/sowmiksudo/WattWatch.git](https://github.com/sowmiksudo/WattWatch.git)
+   cd WattWatch
 
 ```
 
----
-
-## 🔧 Prerequisites
-
-* **Android Device:** Rooted (Magisk/KernelSU) to access `/sys/class` files.
-* **Termux:** For on-device logging.
-* **Python Libraries:**
+2. **Run the Logger (Create your baseline):**
 ```bash
-pip install pandas xgboost scikit-learn matplotlib seaborn
-
-```
-
-
-
----
-
-## 🚦 Usage
-
-### 1. Data Collection (On Phone)
-
-Run the logger via SSH or directly in Termux. Ensure you grant Root permissions.
-
-```bash
-su
 python watt_logger.py
 
 ```
 
-*Perform various tasks (Idle, Gaming, Max Brightness) for ~15 minutes to generate `watt_watch_data.csv`.*
 
-### 2. Training (On PC)
-
-Transfer the CSV to your PC and run the training script.
-
+*Run this for about 20 minutes while performing different tasks to generate a rich `watt_watch_data.csv`.*
+3. **Train & Transpile (On PC):**
+Transfer the CSV to your PC and run the training script. This will generate the pure-Python `brain.py` file.
 ```bash
-python train_model.py
+python train_v2.py
+python translate.py
 
 ```
 
-*This generates `watt_model.json` and the performance graphs.*
 
-### 3. Anomaly Detection Simulation
-
-Test the model against fake malware data.
-
+4. **Deploy the Sentinel (On Phone):**
+Transfer `brain.py` back to your Termux environment and start the security tool:
 ```bash
-python test_detector.py
+python checker.py
 
 ```
 
----
 
-## 🔮 Roadmap (v2.0)
 
-* [ ] **GPU Profiling:** Add `/sys/class/kgsl/gpus` telemetry to improve model accuracy beyond 0.70.
-* [ ] **Network States:** Integrate Wi-Fi/Cellular radio power states.
-* [ ] **Real-Time App:** Port the inference engine back to Android for live alerting.
+## 🧑‍💻 About the Author & Related Work
 
----
+I am passionate about the intersection of Data Science, cybersecurity, and low-level system architecture. I enjoy building tools that extract meaning from the noise of raw hardware and network data.
 
-## 📄 License
+If you find this project interesting, be sure to check out my other cybersecurity tooling:
 
-This project is open-source and available under the MIT License.
+* **TCP Traffic Analyzer for Android:** A dynamic analysis tool built using **Frida** and **Python** to intercept, inspect, and reverse-engineer raw TCP traffic from Android applications.
+
+*Currently preparing for a Bachelor's degree in Data Science and Analytics, exploring edge AI and anomaly detection.*
+
+## 📜 License
+
+Distributed under the MIT License. See `LICENSE` for more information.

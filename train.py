@@ -3,6 +3,7 @@ import xgboost as xgb
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
+import m2cgen as m2c 
 
 # 1. Load the Gold Standard Dataset
 df = pd.read_csv('watt_watch_data_v5.csv')
@@ -65,3 +66,12 @@ plt.show()
 
 # Save the new brain
 model.save_model("watt_model_v2.json")
+
+# --- NEW: TRANSPILE TO PURE PYTHON ---
+print("\n[*] Translating AI into pure Python code (brain.py)...")
+code = m2c.export_to_python(model)
+
+with open("brain.py", "w") as f:
+    f.write(code)
+
+print("[+] Success! The brain.py file is ready for Termux.")
