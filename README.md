@@ -1,10 +1,8 @@
 # Watt-Watch 🔋
-
-<div align="center">
-  <img src="images/Figure_1.png" alt="Watt-Watch Overview" width="700"/>
-</div>
-
 **A Machine Learning-Powered Real-Time Hardware Profiler and Security Sentinel for Android.**
+<div align="center">
+  <img src="images/Figure_2.png" alt="Watt-Watch Overview" width="700"/>
+</div>
 
 ## 📖 Overview
 Standard Android battery monitors rely on OS-level statistics to tell you *what* drained your battery after the fact. **Watt-Watch** takes a different approach. It acts as an active security sentinel, reading raw hardware telemetry in real-time to detect abnormal power consumption—such as hidden crypto-miners, spyware, or rogue background processes—the exact second it happens.
@@ -18,7 +16,7 @@ Standard Android battery monitors rely on OS-level statistics to tell you *what*
 ## 📊 How it Works
 
 <div align="center">
-  <img src="images/Figure_2.png" alt="Watt-Watch Feature Importance" width="600"/>
+  <img src="images/Figure_1.png" alt="Watt-Watch Feature Importance" width="600"/>
   <p><i>Figure 2: XGBoost Feature Importance revealing the specific power personality of the device.</i></p>
 </div>
 
